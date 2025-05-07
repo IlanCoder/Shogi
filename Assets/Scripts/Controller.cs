@@ -10,6 +10,9 @@ public class Controller
     const int ROWS = 9;
     const int COLS = 9;
 
+    Team currentTurn = Team.White;
+    Piece selectedPiece = null;
+
     public Controller(View view)
     {
         this.view = view;
@@ -19,7 +22,7 @@ public class Controller
     }
 
     void SetBoard()
-    {    
+    {
         CreatePawns();
         CreateSpears();
         CreateKnights();
@@ -30,7 +33,7 @@ public class Controller
         CreateBishops();
     }
 
-#region Piece Creation
+    #region Piece Creation
     void CreatePawns()
     {
         for (int i = 0; i < COLS; i++)
@@ -92,7 +95,7 @@ public class Controller
 
     void CreatePiece(int2 coor, PieceType type, Team team)
     {
-        Piece piece = type switch { 
+        Piece piece = type switch {
             PieceType.Pawn => new Pawn(coor, team),
             PieceType.Spear => new Spear(coor, team),
             PieceType.Horse => new Horse(coor, team),
@@ -103,11 +106,49 @@ public class Controller
             PieceType.King => new King(coor, team),
             _ => null
         };
-        if(piece == null) return;
+        if (piece == null) return;
         board.GetSquare(coor.x, coor.y).piece = piece;
         view.AddPiece(ref piece, coor);
     }
-#endregion
+    #endregion
+
+    public void SelectSquare(int2 gridPos) {
+        ref Square selectedSquare = ref board.GetSquare(gridPos.x, gridPos.y);
+        if (selectedPiece != null) {
+            if (selectedSquare.piece == null) MoveSelectedPiece(selectedSquare);
+            else if (selectedSquare.piece.team == currentTurn) selectedPiece = selectedSquare.piece;
+            else {
+                EatPiece(selectedSquare.Coor);
+                MoveSelectedPiece(selectedSquare);
+            }
+        }
+        else {
+            if (selectedSquare.piece == null) return;
+            if (selectedSquare.piece.team != currentTurn) return;
+            selectedPiece = selectedSquare.piece;
+        }
+    }
+
+    void EatPiece(int2 coor) { 
+
+    }
+
+    void MoveSelectedPiece(Square selectedSquare) {
+        RemovePiece(selectedPiece.coor);
+        AddPiece(ref selectedPiece, selectedSquare.Coor);
+        selectedPiece = null;
+    }
+
+    void RemovePiece(int2 coor) {
+        board.GetSquare(coor.x, coor.y).piece = null;
+        view.RemovePiece(coor);
+    }
+
+    void AddPiece(ref Piece piece, int2 coor) {
+        board.GetSquare(coor.x, coor.y).piece = piece;
+        piece.coor = coor;
+        view.AddPiece(ref piece, coor);
+    }
 
     ~Controller(){}
 }

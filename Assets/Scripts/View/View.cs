@@ -9,6 +9,8 @@ public class View : MonoBehaviour
 
     [Header("View Objects")]
     [SerializeField] Transform gridParent;
+    [SerializeField] CemeteryView whiteCemetery;
+    [SerializeField] CemeteryView blackCemetery;
 
     Controller controller;
 
@@ -17,6 +19,26 @@ public class View : MonoBehaviour
     void Awake()
     {
         controller = new Controller(this);
+    }
+
+    private void Start()
+    {
+        whiteCemetery.SetCemetaryView(this);
+        blackCemetery.SetCemetaryView(this);
+    }
+
+    public void EnableTeamCemetary(Team team)
+    {
+        if(team == Team.White)
+        {
+            whiteCemetery.EnableCemetaryView();
+            blackCemetery.EnableCemetaryView(false);
+        }
+        else
+        {
+            whiteCemetery.EnableCemetaryView(false);
+            blackCemetery.EnableCemetaryView();
+        }
     }
 
     public void CreateGrid(ref Board board, int rows, int cols)
@@ -45,5 +67,15 @@ public class View : MonoBehaviour
 
     public void SelectSquare(int2 gridPos) {
         controller.SelectSquare(gridPos);
+    }
+
+    public void SelectCemetaryPiece(PieceType pieceType)
+    {
+        controller.SelectCemetarySquare(pieceType);
+    }
+
+    public void UpdateCemetary(Team team, PieceType pieceType, int count) {
+        if(team == Team.White) whiteCemetery.UpdateCellView(pieceType, count);
+        else blackCemetery.UpdateCellView(pieceType, count);
     }
 }

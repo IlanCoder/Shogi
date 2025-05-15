@@ -88,6 +88,7 @@ GameObject:
   - component: {fileID: 5289990896716107305}
   - component: {fileID: 2045855992465149503}
   - component: {fileID: 5774090657115865169}
+  - component: {fileID: 3872956005907455099}
   m_Layer: 5
   m_Name: Cemetery Cell
   m_TagString: Untagged
@@ -197,6 +198,19 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
+--- !u!114 &3872956005907455099
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2984747598944315943}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3a7bdc4150633bd4486af6c2f20b71ea, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  countText: {fileID: 1862746770636767281}
 --- !u!1 &5150618397271023326
 GameObject:
   m_ObjectHideFlags: 0

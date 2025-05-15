@@ -1,6 +1,4 @@
-using UnityEngine;
 using Unity.Mathematics;
-using System.Runtime.InteropServices.WindowsRuntime;
 
 public struct Board
 {

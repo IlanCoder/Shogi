@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Runtime.InteropServices.WindowsRuntime;
 using Unity.Mathematics;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public class Controller
@@ -17,6 +18,8 @@ public class Controller
 
     Player whitePlayer;
     Player blackPlayer;
+
+    List<int2> validMoves = new List<int2>();
 
     public Controller(View view) {
         this.view = view;
@@ -123,26 +126,31 @@ public class Controller
         ref Square selectedSquare = ref board.GetSquare(gridPos.x, gridPos.y);
         if (selectedPiece != null) {
             if (selectedSquare.piece == null) { //Mover
+                if (!IsValidMove(selectedSquare.Coor) && selectedPiece.coor.x >= 0) return;
                 if (selectedPiece.coor.x < 0) UpdateCemetaryCount(selectedPiece.type);
                 MoveSelectedPiece(selectedSquare);
-            }  
+                SwitchTeam();
+            }
             else if (selectedSquare.piece.team == currentTurn) { //Cambiar de Seleccion
 
                 if (selectedPiece.coor.x < 0) EatPiece(ref selectedPiece);
-                selectedPiece = selectedSquare.piece;
+                SelectNewPiece(selectedSquare.piece);
             }
             else if (selectedPiece.coor.x >= 0) { //Comer
+                if (!IsValidMove(selectedSquare.Coor)) return;
                 EatPiece(ref selectedSquare.piece);
                 MoveSelectedPiece(selectedSquare);
+                SwitchTeam();
             }
         }
-        else {
+        else { //Select
             if (selectedSquare.piece == null) return;
             if (selectedSquare.piece.team != currentTurn) return;
-            selectedPiece = selectedSquare.piece;
+            SelectNewPiece(selectedSquare.piece);
         }
     }
 
+    #region Peace Eat
     public void SelectCemetarySquare(PieceType pieceType) {
         Player currentPlayer = currentTurn == Team.White ? whitePlayer : blackPlayer;
         selectedPiece = pieceType switch
@@ -158,7 +166,7 @@ public class Controller
         };
         
     }
-
+    
     void UpdateCemetaryCount(PieceType pieceType) {
         Player currentPlayer = currentTurn == Team.White ? whitePlayer : blackPlayer;
         switch (pieceType) {
@@ -222,6 +230,58 @@ public class Controller
                 break;
         }
     }
+    #endregion
+
+    bool IsValidMove(int2 move)
+    {
+        foreach (int2 validMove in validMoves)
+        {
+            if (move.x != validMove.x) continue;
+            if (move.y == validMove.y) return true;
+        }
+        return false;
+    }
+
+    void SelectNewPiece(Piece piece) {
+        selectedPiece = piece;
+        validMoves.Clear();
+        List<int2> pieceMoves = selectedPiece.GetMoves();
+        int2 pieceCoor = selectedPiece.coor;
+
+        if (selectedPiece.GetType().IsSubclassOf(typeof(SingleMovePiece))) {
+            foreach (int2 move in pieceMoves) {
+                int2 newCoor;
+                newCoor.y = move.x;
+                newCoor.x = currentTurn == Team.White ? move.y : -move.y;
+                newCoor += pieceCoor;
+                if (newCoor.x < 0 || newCoor.x >= ROWS) continue;
+                if (newCoor.y < 0 || newCoor.y >= COLS) continue;
+                if (board.GetSquare(newCoor.x, newCoor.y).piece != null)
+                {
+                    if (board.GetSquare(newCoor.x, newCoor.y).piece.team == currentTurn) continue;
+                }
+                validMoves.Add(newCoor);
+            }
+        } else if (selectedPiece.GetType().IsSubclassOf(typeof(DirectionalMovePiece)))
+        {
+            foreach (int2 direction in pieceMoves)
+            {
+                for(int i = 1; i <= 8; i++)
+                {
+                    int2 newCoor = pieceCoor + direction * i;
+                    if (newCoor.x < 0 || newCoor.x >= ROWS) break;
+                    if (newCoor.y < 0 || newCoor.y >= COLS) break;
+                    if (board.GetSquare(newCoor.x, newCoor.y).piece != null)
+                    {
+                        if (board.GetSquare(newCoor.x, newCoor.y).piece.team == currentTurn) break;
+                        validMoves.Add(newCoor);
+                        break;
+                    }
+                    validMoves.Add(newCoor);
+                }
+            }
+        }
+    }
 
     void MoveSelectedPiece(Square selectedSquare) {
         if (selectedPiece.coor.x >= 0) RemovePiece(selectedPiece.coor);
@@ -238,6 +298,11 @@ public class Controller
         board.GetSquare(coor.x, coor.y).piece = piece;
         piece.coor = coor;
         view.AddPiece(ref piece, coor);
+    }
+
+    void SwitchTeam() {
+        currentTurn = currentTurn == Team.White ? Team.Black : Team.White;
+        view.EnableTeamCemetary(currentTurn);
     }
 
     ~Controller(){}

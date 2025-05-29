@@ -22,6 +22,14 @@ public class SquareView : MonoBehaviour
     [SerializeField] Sprite whiteKingSprite;
     [SerializeField] Sprite blackKingSprite;
 
+    [Header("Upgraded Sprites")]
+    [SerializeField] Sprite upPawnSprite;
+    [SerializeField] Sprite upSpearSprite;
+    [SerializeField] Sprite upHorseSprite;
+    [SerializeField] Sprite upSilverSprite;
+    [SerializeField] Sprite upTowerSprite;
+    [SerializeField] Sprite upBishopSprite;
+
     int2 gridPos;
 
     void Awake()
@@ -60,6 +68,12 @@ public class SquareView : MonoBehaviour
             PieceType.Tower => towerSprite,
             PieceType.Bishop => bishopSprite,
             PieceType.King => piece.team == Team.White ? whiteKingSprite : blackKingSprite,
+            PieceType.UpPawn => upPawnSprite,
+            PieceType.UpSpear => upSpearSprite,
+            PieceType.UpHorse => upHorseSprite,
+            PieceType.UpSilver => upSilverSprite,
+            PieceType.UpTower => upTowerSprite,
+            PieceType.UpBishop => upBishopSprite,
             _ => null
         };
 
